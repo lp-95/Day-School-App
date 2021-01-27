@@ -5,7 +5,6 @@ import backend.exception.NotFoundException;
 import backend.model.Student;
 import backend.repository.StudentRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +16,7 @@ import static backend.exception.ErrorMessages.ID_NOT_FOUND;
 @AllArgsConstructor
 @Service
 public class StudentServiceImpl implements StudentService {
-    private static final Double TUITION = 10000.;
-    private static final Double MEAL = 3500.;
-    @Autowired
-    private StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
 
     @Override
     public Student getById( UUID id ) throws NotFoundException {
@@ -35,7 +31,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Set<Student> getByName( String name, int page, int size ) {
-        return this.studentRepository.findByName( name, PageRequest.of( page, size) );
+        return null;
     }
 
     @Override
@@ -52,11 +48,6 @@ public class StudentServiceImpl implements StudentService {
         student.setPhone( dto.getPhone() );
         student.setGrade( dto.getGrade() );
         student.setMeal( dto.getMeal() );
-        if (student.getMeal()) {
-            student.setAmount( MEAL + TUITION );
-        } else {
-            student.setAmount( TUITION );
-        }
         return this.save( student );
     }
 
@@ -77,5 +68,4 @@ public class StudentServiceImpl implements StudentService {
         Student student = this.getById( id );
          this.studentRepository.delete( student );
     }
-
 }

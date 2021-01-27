@@ -4,7 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -19,9 +19,6 @@ public class Day {
     private UUID id;
     @Temporal( TemporalType.DATE )
     private Date date;
-//    @ManyToMany(cascade = CascadeType.ALL)
-//    @JoinTable( name = "user_day_mapping",
-//            joinColumns = { @JoinColumn ( name = "day_id", referencedColumnName = "id" ) },
-//            inverseJoinColumns = { @JoinColumn ( name = "user_id", referencedColumnName = "id" ) } )
-//    private Map<Employ, Double> userHours;
+    @OneToMany( mappedBy = "day", fetch = FetchType.LAZY )
+    private List<DayWork> workingHours;
 }

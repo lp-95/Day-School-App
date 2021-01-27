@@ -2,16 +2,12 @@ package backend.service;
 
 import backend.dto.EmployDto;
 import backend.exception.NotFoundException;
-import backend.model.Day;
 import backend.model.Employ;
 import backend.repository.EmployRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,10 +16,7 @@ import static backend.exception.ErrorMessages.*;
 @AllArgsConstructor
 @Service
 public class EmployServiceImpl implements EmployService {
-    @Autowired
-    private EmployRepository employRepository;
-    @Autowired
-    private DayServiceImpl dayService;
+    private final EmployRepository employRepository;
 
     @Override
     public Employ getById( UUID id ) throws NotFoundException {
@@ -38,7 +31,7 @@ public class EmployServiceImpl implements EmployService {
 
     @Override
     public Set<Employ> getByName( String name, int page, int size ) {
-        return this.employRepository.findByName( name, PageRequest.of( page, size ) );
+        return null;
     }
 
     @Override
@@ -67,22 +60,6 @@ public class EmployServiceImpl implements EmployService {
         employ.setPhone( dto.getPhone() );
         employ.setRate( dto.getRate() );
         employ.setFullTime( dto.getFullTime() );
-//        if ( dto.getDay() != null ) {
-//            Day wrong = this.dayService.getById( id );
-//            Double hours = wrong.getUserHours().get( employ );
-//            wrong.getUserHours().remove( employ );
-//            this.dayService.save( wrong );
-//            Day correct = this.dayService.findByDate( dto.getDate() );
-//            if ( correct != null ) {
-//                correct.getUserHours().put( employ, hours );
-//            } else {
-//                correct = new Day();
-//                correct.setDate( dto.getDate() );
-//                Map<Employ,Double> map = new HashMap<>();
-//                correct.setUserHours( map );
-//            }
-//            this.dayService.save( correct );
-//        }
         return this.save( employ );
     }
 

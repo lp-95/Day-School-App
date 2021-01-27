@@ -11,7 +11,6 @@ import java.util.Date;
 @Getter
 @Setter
 @EqualsAndHashCode
-
 public class AccountingDto {
     @JsonFormat( pattern = "dd-mm-yyyy" )
     private Date from;

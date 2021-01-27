@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,9 +18,8 @@ public class Employ extends User {
     private Double rate;
     @Column
     private Boolean fullTime;
-    @ManyToMany
-    @JoinColumn( name = "employ_id" )
-    private Set<Day> days;
     @OneToMany( mappedBy = "employ", fetch = FetchType.LAZY )
-    private List<Bill> bills = new ArrayList<>();
+    private List<EmployBill> bills = new ArrayList<>();
+    @OneToMany( mappedBy = "employ", fetch = FetchType.LAZY )
+    private List<DayWork> dayWork = new ArrayList<>();
 }

@@ -3,9 +3,9 @@ package backend.model;
 import lombok.*;
 
 import javax.persistence.*;
-
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -14,17 +14,15 @@ import java.util.UUID;
 @Setter
 @EqualsAndHashCode
 @Entity
-
 public class Accounting {
     @Id
-    @GeneratedValue
     private UUID id;
     @Column
     @Temporal( TemporalType.DATE )
-    private Date startDate;
+    private Date dateFrom;
     @Column
     @Temporal( TemporalType.DATE )
-    private Date endDate;
+    private Date dateTo;
     @OneToMany( mappedBy = "accounting", fetch = FetchType.LAZY )
-    private Set<Bill> bills;
+    private List<Bill> bills = new ArrayList<>();
 }

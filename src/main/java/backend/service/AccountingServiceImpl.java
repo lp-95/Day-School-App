@@ -1,34 +1,29 @@
 package backend.service;
 
 import backend.dto.AccountingDto;
-import backend.exception.BadRequestException;
 import backend.exception.NotFoundException;
-import backend.model.Accounting;
-import backend.model.Bill;
+import backend.model.*;
 import backend.repository.AccountingRepository;
 import backend.repository.EmployRepository;
 import backend.repository.StudentRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
-import static backend.exception.ErrorMessages.*;
+import static backend.exception.ErrorMessages.ID_NOT_FOUND;
 
 @AllArgsConstructor
 @Service
-public class AccountingServiceImpl implements AccountingService {
-    @Autowired
-    private AccountingRepository accountingRepository;
-    @Autowired
-    private StudentRepository studentRepository;
-    @Autowired
-    private EmployRepository employRepository;
+public class AccountingServiceImpl implements AccountingService{
+    private static final Double TUITION = 10000.;
+    private static final Double MEAL = 3500.;
+    private final AccountingRepository accountingRepository;
+    private final EmployRepository employRepository;
+    private final StudentRepository studentRepository;
 
     @Override
     public Accounting getById( UUID id ) throws NotFoundException {
@@ -37,67 +32,75 @@ public class AccountingServiceImpl implements AccountingService {
     }
 
     @Override
-    public Set<Accounting> getAllAccounting( int page, int size ) {
-        return this.accountingRepository.findAll( PageRequest.of( page, size ) ).toSet();
-    }
-
-    @Override
-    public Accounting save( Accounting accounting ) {
+    public Accounting save( AccountingDto dto ) {
+        Accounting accounting = new Accounting();
+        accounting.setDateFrom( dto.getFrom() );
+        accounting.setDateTo( dto.getTo() );
+        for ( Employ employ : this.employRepository.findAll() ) {
+            generateBills( employ, accounting );
+        }
+        for ( Student student : this.studentRepository.findAll() ) {
+            generateBills( student, accounting );
+        }
         return this.accountingRepository.save( accounting );
     }
 
-    @Override
-    public Accounting save( AccountingDto dto ) throws BadRequestException {
-        Accounting accounting = new Accounting();
-        if ( dto.getFrom().after( dto.getTo() ) )
-            throw new BadRequestException( INCORRECT_DATE.getErrorMessage() );
-        accounting.setStartDate( dto.getFrom() );
-        accounting.setEndDate( dto.getTo() );
-        this.studentRepository.findAll().forEach( student -> student.getBills().add( new Bill(
-                UUID.randomUUID(),
-                student,
-                null,
-                accounting,
-                student.getAmount(),
-                false
-        ) ) );
-        this.employRepository.findAll().forEach( employ -> employ.getBills().add( new Bill(
-                UUID.randomUUID(),
-                null,
-                employ,
-                accounting,
-                employ.getRate() * this.getWorkDays( accounting.getStartDate(), accounting.getEndDate() ),
-                false
-        ) ) );
-        return this.save( accounting );
+    private void generateBills( Employ employ, Accounting accounting ) {
+        EmployBill employBill = new EmployBill();
+        employBill.setId( UUID.randomUUID() );
+        employBill.setAmount( getEmployAmount( employ, accounting.getDateFrom(), accounting.getDateTo() ) );
+        employBill.setAccounting( accounting );
+        employBill.setEmploy( employ );
+        employ.getBills().add( employBill );
+        this.employRepository.save( employ );
     }
 
-    @Override
-    public Accounting update( UUID id, AccountingDto dto ) throws NotFoundException {
-        Accounting accounting = this.getById( id );
-        accounting.setStartDate( dto.getFrom() );
-        accounting.setEndDate( dto.getTo() );
-        return this.save( accounting );
+    private void generateBills( Student student, Accounting accounting ) {
+        StudentBill studentBill = new StudentBill();
+        studentBill.setId( UUID.randomUUID() );
+        studentBill.setAmount( getStudentAmount( student ) );
+        studentBill.setAccounting( accounting );
+        studentBill.setStudent( student );
+        student.getBills().add( studentBill );
+        this.studentRepository.save( student );
     }
 
-    @Override
-    public void delete( UUID id ) throws NotFoundException {
-        this.accountingRepository.delete( this.getById( id ) );
+    private Double getStudentAmount( Student student ) {
+        return student.getMeal() ? MEAL + TUITION : TUITION;
     }
 
-    private Integer getWorkDays( Date from, Date to ) {
+    private Double getEmployAmount( Employ employ, Date from, Date to ) {
+        if ( employ.getFullTime() ) {
+            double totalHours = getWorkDays( from, to ) * 8;
+            double nonWorkedHours = getHours( employ.getDayWork() );
+            double toPay = totalHours - nonWorkedHours;
+            return toPay * employ.getRate();
+        } else {
+            return employ.getRate() * getHours( employ.getDayWork() );
+        }
+    }
+
+    private double getHours( List<DayWork> dayWork ) {
+        double hours = 0.;
+        for ( DayWork day : dayWork ) {
+            hours += day.getHours();
+        }
+        return hours;
+    }
+
+    private int getWorkDays( Date startDate, Date endDate ) {
         Calendar startCal = Calendar.getInstance();
-        startCal.setTime( from );
+        startCal.setTime(startDate);
         Calendar endCal = Calendar.getInstance();
-        endCal.setTime( to );
+        endCal.setTime( endDate );
         int workDays = 0;
         if ( startCal.getTimeInMillis() > endCal.getTimeInMillis() ) {
-            startCal.setTime( to );
-            endCal.setTime( from );
+            startCal.setTime( endDate );
+            endCal.setTime( startDate );
         }
         while ( startCal.getTimeInMillis() <= endCal.getTimeInMillis() ) {
-            if ( startCal.get(Calendar.DAY_OF_WEEK) != Calendar.FRIDAY &&
-                    startCal.get(Calendar.DAY_OF_WEEK ) != Calendar.SATURDAY ) {
+            if ( startCal.get(Calendar.DAY_OF_WEEK ) != Calendar.FRIDAY &&
+                    startCal.get( Calendar.DAY_OF_WEEK ) != Calendar.SATURDAY ) {
                 workDays++;
             }
             startCal.add( Calendar.DAY_OF_MONTH, 1 );

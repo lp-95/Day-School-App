@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @AllArgsConstructor
@@ -19,8 +18,6 @@ public class Student extends User {
     private Integer grade;
     @Column
     private Boolean meal;
-    @Column
-    private Double amount;
     @OneToMany( mappedBy = "student", fetch = FetchType.LAZY )
-    private List<Bill> bills = new ArrayList<>();
+    private List<StudentBill> bills = new ArrayList<>();
 }

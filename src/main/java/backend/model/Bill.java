@@ -12,23 +12,16 @@ import java.util.UUID;
 @Setter
 @EqualsAndHashCode
 @Entity
-public class Bill {
+@Inheritance( strategy = InheritanceType.SINGLE_TABLE )
+public abstract class Bill {
     @Id
     private UUID id;
-    @JsonBackReference
-    @ManyToOne( fetch = FetchType.LAZY )
-    @JoinColumn( name = "student_id", insertable = false, updatable = false )
-    private Student student;
-    @JsonBackReference
-    @ManyToOne( fetch = FetchType.LAZY )
-    @JoinColumn( name = "employ_id", insertable = false, updatable = false )
-    private Employ employ;
-    @JsonBackReference
-    @ManyToOne( fetch = FetchType.LAZY )
-    @JoinColumn( name = "accounting_id" )
-    private Accounting accounting;
     @Column
     private Double amount;
     @Column
     private Boolean paid;
+    @JsonBackReference
+    @ManyToOne( fetch = FetchType.LAZY)
+    @JoinColumn( name = "accounting_id" )
+    private Accounting accounting;
 }

@@ -8,7 +8,6 @@ import lombok.*;
 @Getter
 @Setter
 @EqualsAndHashCode
-
 public abstract class UserDto {
     private String firstName;
     private String lastName;

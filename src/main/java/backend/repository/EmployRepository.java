@@ -10,5 +10,4 @@ import java.util.UUID;
 
 @Repository
 public interface EmployRepository extends JpaRepository<Employ, UUID> {
-    Set<Employ> findByName( String firstName, Pageable pageable );
 }

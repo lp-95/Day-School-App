@@ -5,10 +5,10 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Getter
 @Setter
-@EqualsAndHashCode
-public class BillDto {
-    private Double amount;
-    private Boolean paid;
+public class SignInRequest {
+    private String email;
+    private String password;
 }

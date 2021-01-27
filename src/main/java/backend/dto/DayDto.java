@@ -12,7 +12,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @EqualsAndHashCode
-
 public class DayDto {
     @JsonFormat( pattern = "dd-mm-yyyy" )
     private Date date;
