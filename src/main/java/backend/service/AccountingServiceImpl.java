@@ -7,6 +7,7 @@ import backend.repository.AccountingRepository;
 import backend.repository.EmployRepository;
 import backend.repository.StudentRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -32,6 +33,11 @@ public class AccountingServiceImpl implements AccountingService{
     }
 
     @Override
+    public List<Accounting> getAccounting( int page, int size ) {
+        return this.accountingRepository.findAll( PageRequest.of( page, size ) ).getContent();
+    }
+
+    @Override
     public Accounting save( AccountingDto dto ) {
         Accounting accounting = new Accounting();
         accounting.setDateFrom( dto.getFrom() );
@@ -43,6 +49,25 @@ public class AccountingServiceImpl implements AccountingService{
             generateBills( student, accounting );
         }
         return this.accountingRepository.save( accounting );
+    }
+
+    @Override
+    public Accounting update( UUID id, AccountingDto dto ) throws NotFoundException {
+        Accounting accounting = this.getById( id );
+        accounting.setDateFrom( dto.getFrom() );
+        accounting.setDateTo( dto.getTo() );
+        for ( Employ employ : this.employRepository.findAll() ) {
+            generateBills( employ, accounting );
+        }
+        for ( Student student : this.studentRepository.findAll() ) {
+            generateBills( student, accounting );
+        }
+        return this.accountingRepository.save( accounting );
+    }
+
+    @Override
+    public void delete( UUID id ) throws NotFoundException {
+        this.accountingRepository.delete( this.getById( id ) );
     }
 
     private void generateBills( Employ employ, Accounting accounting ) {
