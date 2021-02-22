@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/accounting")
+@RequestMapping( path="/accounting" )
 public class AccountingController {
     private final AccountingServiceImpl accountingService;
 
